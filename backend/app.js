@@ -9,6 +9,11 @@ const booksRoutes = require('./routes/books');
 const userRoutes = require('./routes/user'); // Ajoutez votre route pour l'authentification
 
 const app = express();
+app.use((req, res, next) => {
+  console.log(`📢 Requête reçue : ${req.method} ${req.url}`);
+  next();
+});
+
 
 // Connexion à MongoDB
 const DB = process.env.DB_URI;

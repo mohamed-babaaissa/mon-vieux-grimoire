@@ -4,45 +4,50 @@ const Book = require('../models/book');
 exports.createBook = (req, res, next) => {
   try {
     const bookObject = JSON.parse(req.body.book);
-    delete bookObject._id; // Supprime l'ID si envoyé par le frontend
+    delete bookObject._id; 
 
-    // Vérification des données obligatoires avant d'enregistrer
-    if (!bookObject.title || !bookObject.author || !bookObject.genre) {
-      if (req.file) {
-        fs.unlinkSync(req.file.path); // Supprime l'image si un champ obligatoire est manquant
-      }
-      return res.status(400).json({ message: 'Certains champs obligatoires sont manquants.' });
+    if (!req.file) {
+      return res.status(400).json({ message: "❌ Aucune image reçue." });
     }
 
-    // Crée le modèle Book avec les données reçues
+    // Vérification de l'URL finale
+    const imageUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+    console.log("📸 URL de l'image enregistrée :", imageUrl);
+
     const book = new Book({
       ...bookObject,
       userId: req.auth.userId,
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`, // URL de l'image
+      imageUrl, // ✅ Assurez-vous que c'est bien cette URL qui est stockée
     });
 
-    // Sauvegarde dans MongoDB
     book.save()
-      .then(() => res.status(201).json({ message: 'Livre ajouté avec succès !' }))
+      .then(() => {
+        console.log("✅ Livre ajouté avec succès !");
+        res.status(201).json({ message: "Livre ajouté avec succès !" });
+      })
       .catch((error) => {
+        console.error("❌ Erreur lors de l'enregistrement du livre :", error);
         if (req.file) {
-          fs.unlinkSync(req.file.path); // Supprime l'image si MongoDB rejette la sauvegarde
+          fs.unlinkSync(req.file.path); // Supprime l'image en cas d'erreur
         }
         res.status(400).json({ error });
       });
   } catch (error) {
+    console.error("❌ Erreur inattendue :", error);
     if (req.file) {
-      fs.unlinkSync(req.file.path); // Supprime l'image en cas d'erreur imprévue
+      fs.unlinkSync(req.file.path);
     }
-    res.status(500).json({ error: 'Erreur interne du serveur.' });
+    res.status(500).json({ error: "Erreur interne du serveur." });
   }
 };
+
 
 exports.getAllBooks = (req, res, next) => {
   Book.find()
     .then((books) => res.status(200).json(books))
     .catch((error) => res.status(400).json({ error }));
 };
+
 
 exports.getBookById = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
@@ -106,16 +111,24 @@ exports.rateBook = (req, res, next) => {
       }
 
       // Vérifie si l'utilisateur a déjà noté ce livre
-      const existingRating = book.ratings.find((rating) => rating.userId === userId);
-      if (existingRating) {
-        existingRating.grade = grade; // Mise à jour de la note existante
+      const existingRatingIndex = book.ratings.findIndex((rating) => rating.userId === userId);
+
+      if (existingRatingIndex !== -1) {
+        // Si l'utilisateur a déjà noté, on remplace l'ancienne note par la nouvelle
+        book.ratings[existingRatingIndex].grade = grade;
       } else {
-        book.ratings.push({ userId, grade }); // Ajout d'une nouvelle note
+        // Sinon, on ajoute une nouvelle note
+        book.ratings.push({ userId, grade });
       }
 
-      // Recalcule la moyenne
-      book.averageRating = 
-        book.ratings.reduce((sum, rating) => sum + rating.grade, 0) / book.ratings.length;
+      // **Recalcule correctement la moyenne**
+    // **Recalcule correctement la moyenne**
+const totalRatings = book.ratings.length;
+const sumGrades = book.ratings.reduce((sum, rating) => sum + rating.grade, 0);
+
+// Arrondi la moyenne à 2 décimales et convertit en float
+book.averageRating = totalRatings > 0 ? parseFloat((sumGrades / totalRatings).toFixed(2)) : 0;
+
 
       return book.save();
     })
@@ -126,6 +139,8 @@ exports.rateBook = (req, res, next) => {
       res.status(500).json({ error });
     });
 };
+
+
 
 exports.getBestRatedBooks = (req, res, next) => {
   Book.find()
