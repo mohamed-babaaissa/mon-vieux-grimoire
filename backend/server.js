@@ -1,7 +1,7 @@
 const http = require('http');
-const app = require('./app'); // Importation de l'application
+const app = require('./app'); 
 
-require('dotenv').config(); // Charge les variables d'environnement
+require('dotenv').config(); 
 
 const PORT = process.env.PORT || 4001;
 

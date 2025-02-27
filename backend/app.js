@@ -6,11 +6,11 @@ const cors = require('cors');
 const path = require('path');
 
 const booksRoutes = require('./routes/books');
-const userRoutes = require('./routes/user'); // Ajoutez votre route pour l'authentification
+const userRoutes = require('./routes/user'); 
 
 const app = express();
 app.use((req, res, next) => {
-  console.log(`📢 Requête reçue : ${req.method} ${req.url}`);
+  console.log(`Requête reçue : ${req.method} ${req.url}`);
   next();
 });
 
@@ -33,7 +33,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Routes
 app.use('/api/books', booksRoutes);
-app.use('/api/auth', userRoutes); // Ajoutez votre route pour l'authentification
+app.use('/api/auth', userRoutes); 
 
 // Gestion globale des erreurs
 app.use((err, req, res, next) => {

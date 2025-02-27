@@ -31,9 +31,9 @@ const resizeImage = async (req, res, next) => {
     console.log("🔄 Redimensionnement de l'image...");
 
     await sharp(req.file.buffer)
-      .resize(206, 260, { fit: "cover", position: "center" }) // ✅ Redimensionnement
+      .resize(206, 260, { fit: "cover", position: "center" }) 
       .toFormat("jpeg")
-      .jpeg({ quality: 80 }) // ✅ Compression
+      .jpeg({ quality: 80 }) 
       .toFile(outputPath);
 
     req.file.filename = fileName; // ✅ Mise à jour du nom du fichier
