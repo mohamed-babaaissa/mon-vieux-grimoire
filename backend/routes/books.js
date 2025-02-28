@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const booksCtrl = require("../controllers/books"); // Assure-toi que ce fichier existe et est bien importé
+const booksCtrl = require("../controllers/books"); 
 const { upload, resizeImage } = require("../middleware/multer-config");
 const auth = require("../middleware/auth");
 

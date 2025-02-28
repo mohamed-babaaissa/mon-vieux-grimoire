@@ -16,10 +16,18 @@ app.use((req, res, next) => {
 
 
 // Connexion à MongoDB
-const DB = process.env.DB_URI;
-mongoose.connect(DB)
- .then(() => console.log('Connexion à MongoDB réussie !'))
-  .catch((error) => console.log('Connexion à MongoDB échouée :', error));
+const DB_URI = process.env.DB_URI.replace('${DB_USER}', process.env.DB_USER)
+                                 .replace('${DB_PASSWORD}', process.env.DB_PASSWORD)
+                                 .replace('${DB_NAME}', process.env.DB_NAME)
+                                 .replace('${DB_HOST}', process.env.DB_HOST);
+
+mongoose.connect(DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('✅ Connexion sécurisée à MongoDB réussie !'))
+.catch((error) => console.error('❌ Connexion à MongoDB échouée :', error));
+
 
 // Middleware pour gérer les erreurs CORS
 app.use(cors()); // Utilisation du middleware CORS pour tout gérer

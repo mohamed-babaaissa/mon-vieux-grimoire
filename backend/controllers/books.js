@@ -17,7 +17,7 @@ exports.createBook = (req, res, next) => {
     const book = new Book({
       ...bookObject,
       userId: req.auth.userId,
-      imageUrl, // ✅ Assurez-vous que c'est bien cette URL qui est stockée
+      imageUrl, 
     });
 
     book.save()
